@@ -19,7 +19,7 @@ FFHeuristic::FFHeuristic(const plugins::Options &opts)
     }
 }
 
-static plugins::Options mimic_options(shared_ptr<AbstractTask> task) {
+plugins::Options mimic_options(shared_ptr<AbstractTask> task) {
   plugins::Options opts;
   opts.set<bool>("cache_estimates", true);
   opts.set<shared_ptr<AbstractTask>>("transform", task);

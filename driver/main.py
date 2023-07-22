@@ -26,7 +26,7 @@ def main():
         return
     if sys.argv[1] == "pybindings-dynamic-import":
         pydownward = importlib.import_module('driver.pydownward')
-        pydownward.search()
+        # pydownward.search()
         return
     
     args = arguments.parse_args()
