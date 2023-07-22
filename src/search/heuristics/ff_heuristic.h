@@ -4,6 +4,7 @@
 #include "additive_heuristic.h"
 
 #include <vector>
+#include <memory>
 
 namespace ff_heuristic {
 using relaxation_heuristic::PropID;
@@ -13,6 +14,8 @@ using relaxation_heuristic::NO_OP;
 
 using relaxation_heuristic::Proposition;
 using relaxation_heuristic::UnaryOperator;
+
+plugins::Options mimic_options(std::shared_ptr<AbstractTask> task);
 
 /*
   TODO: In a better world, this should not derive from

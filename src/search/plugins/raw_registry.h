@@ -31,6 +31,9 @@ public:
         static RawRegistry instance_;
         return &instance_;
     }
+
+    std::vector<const CategoryPlugin *> get_category_plugins() const;
+
 };
 }
 
