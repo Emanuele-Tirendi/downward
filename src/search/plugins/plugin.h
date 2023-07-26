@@ -1,6 +1,8 @@
 #ifndef PLUGINS_PLUGIN_H
 #define PLUGINS_PLUGIN_H
 
+#include "../abstract_task.h"
+#include "../potentials/potential_function.h"
 #include "any.h"
 #include "options.h"
 #include "plugin_info.h"
@@ -9,10 +11,14 @@
 #include "../utils/strings.h"
 #include "../utils/system.h"
 
+#include <memory>
 #include <string>
 #include <typeindex>
 #include <type_traits>
 #include <vector>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace utils {
 class Context;
@@ -72,6 +78,7 @@ public:
     const std::vector<PropertyInfo> &get_properties() const;
     const std::vector<LanguageSupportInfo> &get_language_support() const;
     const std::vector<NoteInfo> &get_notes() const;
+    virtual void add_to_library(pybind11::module_ m) const = 0;
 };
 
 
@@ -112,6 +119,13 @@ public:
     Any construct(const Options &options, const utils::Context &context) const override {
         std::shared_ptr<Base> ptr = this->create_component(options, context);
         return Any(ptr);
+    }
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<Constructed, std::shared_ptr<Constructed>, Base> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<const plugins::Options &>());
     }
 };
 
@@ -180,6 +194,7 @@ public:
     std::string get_class_name() const;
     std::string get_synopsis() const;
     bool supports_variable_binding() const;
+    virtual void add_to_library(pybind11::module_ &m) const = 0;
 };
 
 template<typename T>
@@ -189,6 +204,12 @@ public:
         : CategoryPlugin(typeid(std::shared_ptr<T>),
                          utils::get_type_name<std::shared_ptr<T>>(),
                          category_name) {
+    }
+    virtual void add_to_library(pybind11::module_ &m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<T, std::shared_ptr<T>> pybind_class(m, get_category_name().c_str());
     }
 };
 

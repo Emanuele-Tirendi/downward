@@ -6,6 +6,9 @@
 #include "../plugins/plugin.h"
 #include "../utils/system.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 using namespace std;
 
 namespace potentials {
@@ -45,6 +48,14 @@ public:
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::INITIAL_STATE));
     }
+
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<PotentialHeuristic, std::shared_ptr<PotentialHeuristic>, Evaluator> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<const plugins::Options &, std::unique_ptr<potentials::PotentialFunction> >());
+    }
 };
 
 static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature> _plugin_initial_state;
@@ -61,6 +72,14 @@ public:
 
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::ALL_STATES));
+    }
+
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<PotentialHeuristic, std::shared_ptr<PotentialHeuristic>, Evaluator> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<const plugins::Options &, std::unique_ptr<potentials::PotentialFunction> >());
     }
 };
 

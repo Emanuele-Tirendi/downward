@@ -10,6 +10,9 @@
 #include <memory>
 #include <vector>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 using namespace std;
 
 namespace potentials {
@@ -77,6 +80,14 @@ public:
     virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialMaxHeuristic>(
             options, create_sample_based_potential_functions(options));
+    }
+
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<PotentialMaxHeuristic, std::shared_ptr<PotentialMaxHeuristic>, Evaluator> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<const plugins::Options &, std::vector<std::unique_ptr<potentials::PotentialFunction> > &&>());
     }
 };
 

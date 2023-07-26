@@ -5,6 +5,9 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 #include <cassert>
 
 using namespace std;
@@ -19,7 +22,7 @@ FFHeuristic::FFHeuristic(const plugins::Options &opts)
     }
 }
 
-static plugins::Options mimic_options(shared_ptr<AbstractTask> task) {
+plugins::Options mimic_options(shared_ptr<AbstractTask> task) {
   plugins::Options opts;
   opts.set<bool>("cache_estimates", true);
   opts.set<shared_ptr<AbstractTask>>("transform", task);
@@ -105,6 +108,14 @@ public:
         document_property("consistent", "no");
         document_property("safe", "yes for tasks without axioms");
         document_property("preferred operators", "yes");
+    }
+
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<FFHeuristic, std::shared_ptr<FFHeuristic>, Evaluator> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<std::shared_ptr<AbstractTask> >());
     }
 };
 

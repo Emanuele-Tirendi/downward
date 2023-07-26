@@ -17,6 +17,9 @@
 #include <iostream>
 #include <limits>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 using namespace std;
 using utils::ExitCode;
 
@@ -209,6 +212,15 @@ public:
     SearchEngineCategoryPlugin() : TypedCategoryPlugin("SearchEngine") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
+    }
+    virtual void add_to_library(pybind11::module_ &m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<SearchEngine, std::shared_ptr<SearchEngine>> pybind_class(m, get_category_name().c_str());
+        pybind_class = pybind_class.def("search", &SearchEngine::search);
+        pybind_class = pybind_class.def("found_solution", &SearchEngine::found_solution);
+        pybind_class = pybind_class.def("get_plan", &SearchEngine::get_plan);
     }
 }
 _category_plugin;

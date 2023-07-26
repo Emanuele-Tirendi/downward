@@ -2,7 +2,9 @@
 #define HEURISTICS_FF_HEURISTIC_H
 
 #include "additive_heuristic.h"
+#include "../abstract_task.h"
 
+#include <memory>
 #include <vector>
 
 namespace ff_heuristic {
@@ -13,6 +15,8 @@ using relaxation_heuristic::NO_OP;
 
 using relaxation_heuristic::Proposition;
 using relaxation_heuristic::UnaryOperator;
+
+plugins::Options mimic_options(std::shared_ptr<AbstractTask> task);
 
 /*
   TODO: In a better world, this should not derive from

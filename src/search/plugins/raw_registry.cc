@@ -195,4 +195,8 @@ Registry RawRegistry::construct_registry() const {
         move(subcategory_plugins),
         move(features));
 }
+
+std::vector<const CategoryPlugin *> RawRegistry::get_category_plugins() const {
+    return category_plugins;
+}
 }

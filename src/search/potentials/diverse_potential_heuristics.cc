@@ -10,6 +10,9 @@
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
 
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 #include <unordered_set>
 
 using namespace std;
@@ -170,6 +173,14 @@ public:
     virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         DiversePotentialHeuristics factory(options);
         return make_shared<PotentialMaxHeuristic>(options, factory.find_functions());
+    }
+
+    virtual void add_to_library(pybind11::module_ m) const override {
+        pybind11::options options;
+        options.disable_function_signatures();
+
+        pybind11::class_<PotentialMaxHeuristic, std::shared_ptr<PotentialMaxHeuristic>, Evaluator> pybind_class(m, this->get_key().c_str());
+        pybind_class = pybind_class.def(pybind11::init<const plugins::Options &, std::vector<std::unique_ptr<potentials::PotentialFunction> > &&>());
     }
 };
 

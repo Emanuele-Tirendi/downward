@@ -1,8 +1,12 @@
-                                                                                                                                                                                                                                                                                                                                                                    #include <pybind11/pybind11.h>
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <functional>
 #include <fstream>
 #include <vector>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <iostream>
 
 #include "command_line.h"
 #include "heuristic.h"
@@ -10,69 +14,32 @@
 #include "task_proxy.h"
 
 #include "search_engines/enforced_hill_climbing_search.h"
+#include "evaluator.h"
+#include "operator_cost.h"
 #include "heuristics/ff_heuristic.h"
+#include "search_engines/enforced_hill_climbing_search.h"
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
 #include "utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
+#include "plugins/any.h"
+#include "plugins/registry.h"
+#include "plugins/raw_registry.h"
+#include "plugins/plugin.h"
+#include "plugins/options.h"
 
 namespace py = pybind11;
 
-//py::object test(const std::string &sas_file, const std::string &cmd_line) {
+plugins::RawRegistry *rawRegistry = plugins::RawRegistry::instance();
+plugins::Registry registry = rawRegistry->construct_registry();
+
 void read_task(const std::string &sas_file) {
   std::ifstream task_file(sas_file);
   tasks::read_root_task(task_file);
 }
 
-class EvaluatorTrampoline : public Evaluator {
-public:
-    using Evaluator::Evaluator;
-};
-
-class HeuristicTrampoline : public Heuristic {
-public:
-    using Heuristic::Heuristic;
-
-    virtual int compute_heuristic(const State &ancestor_state) override {
-        PYBIND11_OVERRIDE_PURE(
-            int,                /* Return type */
-            Heuristic,          /* Parent class */
-            compute_heuristic,  /* Name of function in C++ (must match Python name) */
-            ancestor_state      /* Argument(s) */
-        );
-    }
-};
-
-void init_ff(py::module_ &m) {
-    py::options options;
-    options.disable_function_signatures();
-
-    py::class_<ff_heuristic::FFHeuristic, std::shared_ptr<ff_heuristic::FFHeuristic>, Heuristic>(m, "FFHeuristic")
-      .def(py::init<std::shared_ptr<AbstractTask>>(), py::arg("task"), py::doc(R"delimiter(
-    FFHeuristic
-    bla bla bla synopsis
-
-    Parameters
-    ----------
-    :param AbstractTask task: optional task transformation for this heuristic
-)delimiter"));
-}
-
-void init_ehc(py::module_ &m) {
-    py::options options;
-    options.disable_function_signatures();
-
-    py::class_<enforced_hill_climbing_search::EnforcedHillClimbingSearch, std::shared_ptr<enforced_hill_climbing_search::EnforcedHillClimbingSearch>>(m, "EHCSearch")
-      .def(py::init<const std::string &, int, double, int, std::shared_ptr<Evaluator>>())
-      .def("search", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::search, py::doc("this has some effect"))
-      .def("found_solution", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::found_solution)
-      .def("get_plan", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::get_plan);
-}
-
 PYBIND11_MODULE(downward, m) {
-    m.doc() = "Gabi's pybind11 example plugin"; // Optional module docstring
-
     py::options options;
     options.disable_function_signatures();
 
@@ -80,28 +47,51 @@ PYBIND11_MODULE(downward, m) {
 
     m.def("get_root_task", &tasks::get_root_task, "Get the root task");
 
-    py::class_<AbstractTask, std::shared_ptr<AbstractTask>>(m, "AbstractTask")
-      .def("get_operator_name", &AbstractTask::get_operator_name);
+    for (const plugins::CategoryPlugin *categoryPlugin : rawRegistry->get_category_plugins()) {
+      categoryPlugin->add_to_library(m);
+    }
+
+    for (auto feature : registry.get_features()) {
+      if (feature->get_key() != "sample_based_potentials" &&
+          feature->get_key() != "diverse_potentials" &&
+          feature->get_key() != "initial_state_potential" &&
+          feature->get_key() != "all_states_potential") {
+        feature->add_to_library(m);
+      }
+    }
 
     py::class_<OperatorID>(m, "OperatorID")
       .def("get_index", &OperatorID::get_index);
 
-    py::class_<FactProxy>(m, "FactProxy")
-      .def("get_name", &FactProxy::get_name);
+  m.def("mimic_options", &ff_heuristic::mimic_options);
 
-    py::class_<State>(m, "State")
-      .def("__getitem__", [](State &self, unsigned index)
-        { return self[index]; })
-      .def("__iter__", [](const State &s) { return py::make_iterator(begin(s), end(s)); }, py::keep_alive<0, 1>());
+  py::enum_<enforced_hill_climbing_search::PreferredUsage>(m, "PreferredUsage")
+      .value("PRUNE_BY_PREFERRED", enforced_hill_climbing_search::PreferredUsage::PRUNE_BY_PREFERRED)
+      .value("RANK_PREFERRED_FIRST", enforced_hill_climbing_search::PreferredUsage::RANK_PREFERRED_FIRST);
 
-    py::class_<Evaluator, std::shared_ptr<Evaluator>, EvaluatorTrampoline>(m, "Evaluator");
-  
-    py::class_<Heuristic, std::shared_ptr<Heuristic>, Evaluator, HeuristicTrampoline>(m, "Heuristic")
-      .def(py::init<std::shared_ptr<AbstractTask>>())
-      .def("compute_heuristic", &Heuristic::compute_heuristic);
+  py::enum_<utils::Verbosity>(m, "Verbosity")
+      .value("SILENT", utils::Verbosity::SILENT)
+      .value("NORMAL", utils::Verbosity::NORMAL)
+      .value("VERBOSE", utils::Verbosity::VERBOSE)
+      .value("DEBUG", utils::Verbosity::DEBUG);
 
-    std::vector<std::function<void(py::module_ &)>> init_functions = {init_ff, init_ehc};
-    for(auto f : init_functions) {
-        f(m);
-    }
+  py::enum_<OperatorCost>(m, "OperatorCost")
+      .value("NORMAL", OperatorCost::NORMAL)
+      .value("ONE", OperatorCost::ONE)
+      .value("PLUSONE", OperatorCost::PLUSONE)
+      .value("MAX_OPERATOR_COST", OperatorCost::MAX_OPERATOR_COST);
+
+  py::class_<plugins::Options>(m, "Options")
+      .def(py::init<>())
+      .def("set_evaluator", &plugins::Options::set<std::shared_ptr<Evaluator>>)
+      .def("set_evaluator_list", &plugins::Options::set<std::vector<std::shared_ptr<Evaluator>>>)
+      .def("set_preferred_usage", &plugins::Options::set<enforced_hill_climbing_search::PreferredUsage>)
+      .def("set_verbosity", &plugins::Options::set<utils::Verbosity>)
+      .def("set_unparsed_config", &plugins::Options::set_unparsed_config)
+      .def("set_operator_cost", &plugins::Options::set<OperatorCost>)
+      .def("set_double", &plugins::Options::set<double>)
+      .def("set_int", &plugins::Options::set<int>);
+
+  py::class_<std::vector<Evaluator>>(m, "EvaluatorVector")
+      .def(py::init<>());
 }
