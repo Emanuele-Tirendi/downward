@@ -804,6 +804,17 @@ fast_downward_plugin(
     DEPENDENCY_ONLY
 )
 
+fast_downward_plugin(
+    NAME PYDOWNWARD
+    HELP "Plugin for creating a pybind11 library for search algorithms and heuristics."
+    SOURCES
+        pydownward
+)
+
+if (NOT PYBINDING_LIBRARY)
+    set(PLUGIN_PYDOWNWARD_ENABLED FALSE)
+endif()
+
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
 
 # The order in PLANNER_SOURCES influences the order in which object

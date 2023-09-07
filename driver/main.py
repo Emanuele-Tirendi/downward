@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import importlib
 
 from . import aliases
 from . import arguments
@@ -12,6 +13,22 @@ from . import __version__
 
 
 def main():
+    # Static import of file using python library requires the
+    # library to be fully built. If that's not the case, an error
+    # occurs. Since the goal is that depending on the config given
+    # to build.py either the python library or the C++ (and not both)
+    # is used and thus built, one of the following two options
+    # are taken into account.
+
+    # The call of the python library is only provisionally here in main().
+    if sys.argv[1] == "pybindings-command-line":
+        os.system("python3 -c 'from driver import pydownward; pydownward.search()'")
+        return
+    if sys.argv[1] == "pybindings-dynamic-import":
+        pydownward = importlib.import_module('driver.pydownward')
+        pydownward.search()
+        return
+    
     args = arguments.parse_args()
     logging.basicConfig(level=getattr(logging, args.log_level.upper()),
                         format="%(levelname)-8s %(message)s",
