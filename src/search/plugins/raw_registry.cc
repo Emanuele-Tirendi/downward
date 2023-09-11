@@ -27,6 +27,10 @@ void RawRegistry::insert_plugin(const Plugin &plugin) {
     plugins.push_back(&plugin);
 }
 
+std::vector<const CategoryPlugin *> RawRegistry::get_category_plugins() {
+    return category_plugins;
+}
+
 FeatureTypes RawRegistry::collect_types(vector<string> &errors) const {
     FeatureTypes feature_types;
     unordered_map<type_index, vector<string>> type_to_names;

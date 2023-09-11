@@ -3,8 +3,8 @@ To install pybind11, use
 
 To test the current pybind setup, proceed as follows:
 
-$ ./build.py pybindings
-Put some output.sas file into the directory builds/pybindings/release
+$ ./pybuild.py
+Put some output.sas file into the project directory
 The test only runs enforced hill-climbing, which has a high likelihood
 to NOT solve a task. It can for example solve the first driverlog task,
 so if in doubt, use that one.

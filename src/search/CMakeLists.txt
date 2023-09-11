@@ -29,9 +29,11 @@ fast_downward_set_linker_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 if (PYBINDING_LIBRARY)
     find_package(pybind11 REQUIRED)
-    # TODO: Find solution. Since the section == LIbraries == targets libraries
-    # to the target downward, we need to call this target downward as well,
-    # even if pydownward would me more desirable.
+    # TODO: Find solution: The name of the library will be the same as the name
+    # of the target used in the pybind11_add_module() command. It would be more
+    # desirable to name it pydownward but since in the section == libraries ==
+    # there are libraries that are linked against downward, we need to use
+    # downward as well and cannot create a new one named pydownward
     pybind11_add_module(downward 
     ${PLANNER_SOURCES}
     )
