@@ -22,6 +22,29 @@ LandmarkCutHeuristic::LandmarkCutHeuristic(const plugins::Options &opts)
     }
 }
 
+LandmarkCutHeuristic::LandmarkCutHeuristic(basic_string<char> unparsed_config,
+                                           utils::LogProxy log,
+                                           bool cache_evaluator_values,
+                                           shared_ptr<AbstractTask> task)
+    : Heuristic(unparsed_config, log, cache_evaluator_values, task),
+      landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark cut heuristic..." << endl;
+    }
+}
+
+LandmarkCutHeuristic::LandmarkCutHeuristic(shared_ptr<AbstractTask> task, 
+                                           utils::Verbosity verbosity,
+                                           shared_ptr<AbstractTask> transform,
+                                           bool cache_evaluator_values)
+    : Heuristic("Manual lmcut", utils::get_log_from_verbosity(verbosity), cache_evaluator_values, task),
+      landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
+    utils::LogProxy log = utils::get_log_from_verbosity(verbosity);
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark cut heuristic..." << endl;
+    }
+}
+
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
 }
 
@@ -53,6 +76,14 @@ public:
         document_property("consistent", "no");
         document_property("safe", "yes");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<LandmarkCutHeuristic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<LandmarkCutHeuristic>(opts.get_unparsed_config(),
+                                                 utils::get_log_from_options(opts),
+                                                 opts.get<bool>("cache_estimates"),
+                                                 opts.get<shared_ptr<AbstractTask>>("transform"));
     }
 };
 

@@ -98,6 +98,10 @@ size_t BasicType::get_hash() const {
     return hash<type_index>()(type);
 }
 
+std::string BasicType::get_fully_qualified_name() const {
+    return "";
+}
+
 FeatureType::FeatureType(type_index pointer_type, const string &type_name,
                          const string &synopsis, bool supports_variable_binding)
     : pointer_type(pointer_type), type_name(type_name), synopsis(synopsis),
@@ -127,6 +131,14 @@ string FeatureType::name() const {
 
 size_t FeatureType::get_hash() const {
     return hash<type_index>()(typeid(FeatureType)) ^ hash<type_index>()(pointer_type);
+}
+
+void FeatureType::set_fully_qualified_name(std::string fully_qualified_name) {
+    this->fully_qualified_name = fully_qualified_name;
+}
+
+std::string FeatureType::get_fully_qualified_name() const {
+    return fully_qualified_name;
 }
 
 ListType::ListType(const Type &nested_type)
@@ -163,6 +175,10 @@ size_t ListType::get_hash() const {
     return hash<type_index>()(typeid(ListType)) ^ nested_type.get_hash();
 }
 
+std::string ListType::get_fully_qualified_name() const {
+    return "";
+}
+
 bool EmptyListType::operator==(const Type &other) const {
     const EmptyListType *other_ptr = dynamic_cast<const EmptyListType *>(&other);
     return other_ptr;
@@ -182,6 +198,10 @@ string EmptyListType::name() const {
 
 size_t EmptyListType::get_hash() const {
     return hash<type_index>()(typeid(EmptyListType));
+}
+
+std::string EmptyListType::get_fully_qualified_name() const {
+    return "";
 }
 
 EnumType::EnumType(type_index type, const EnumInfo &documented_values)
@@ -229,6 +249,13 @@ size_t EnumType::get_hash() const {
     return hash_value;
 }
 
+void EnumType::set_fully_qualified_name(std::string fully_qualified_name) {
+    this->fully_qualified_name = fully_qualified_name;
+}
+
+std::string EnumType::get_fully_qualified_name() const {
+    return fully_qualified_name;
+}
 
 bool SymbolType::operator==(const Type &other) const {
     return other.is_symbol_type();
@@ -248,6 +275,10 @@ string SymbolType::name() const {
 
 size_t SymbolType::get_hash() const {
     return hash<type_index>()(typeid(SymbolType));
+}
+
+std::string SymbolType::get_fully_qualified_name() const {
+    return "";
 }
 
 Any convert(const Any &value, const Type &from_type, const Type &to_type, utils::Context &context) {
@@ -312,7 +343,9 @@ const FeatureType &TypeRegistry::create_feature_type(const CategoryPlugin &plugi
     unique_ptr<FeatureType> type_ptr = utils::make_unique_ptr<FeatureType>(
         plugin.get_pointer_type(), plugin.get_category_name(),
         plugin.get_synopsis(), plugin.supports_variable_binding());
-    const FeatureType &type_ref = *type_ptr;
+    FeatureType &non_const_type_ref = *type_ptr;
+    non_const_type_ref.set_fully_qualified_name(plugin.get_fully_qualified_name());
+    const FeatureType &type_ref = non_const_type_ref;
     registered_types[type] = move(type_ptr);
     return type_ref;
 }
@@ -326,7 +359,9 @@ const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin) {
               + "' already exists and has the same type_index.");
     }
     unique_ptr<EnumType> type_ptr = utils::make_unique_ptr<EnumType>(type, values);
-    const EnumType &type_ref = *type_ptr;
+    EnumType &non_const_type_ref = *type_ptr;
+    non_const_type_ref.set_fully_qualified_name(plugin.get_fully_qualified_name());
+    const EnumType &type_ref = non_const_type_ref;
     registered_types[type] = move(type_ptr);
     return type_ref;
 }

@@ -9,6 +9,12 @@
 
 using namespace std;
 
+PruningMethod::PruningMethod(utils::Verbosity verbosity)
+    : timer(false),
+      log(utils::get_log_from_verbosity(verbosity)),
+      task(nullptr) {
+}
+
 PruningMethod::PruningMethod(const plugins::Options &opts)
     : timer(false),
       log(utils::get_log_from_options(opts)),

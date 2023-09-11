@@ -16,6 +16,9 @@ if os.path.exists("builds/pybindings"):
     else:
         subprocess.run(["rm", "-r", "builds/pybindings"])
 subprocess.run(["mkdir", "builds/pybindings"])
+if os.path.exists("src/search/headers_to_include.txt"):
+    if os.path.isfile("src/search/headers_to_include.txt"):
+        subprocess.run(["rm", "src/search/headers_to_include.txt"])
 subprocess.run(["python3", "build.py", "pybindings_code_generation"])
 if os.path.exists("src/search/pydownward.cc"):
     if os.path.isfile("src/search/pydownward.cc"):

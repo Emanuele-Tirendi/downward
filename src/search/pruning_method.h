@@ -33,6 +33,7 @@ protected:
     long num_successors_before_pruning;
     long num_successors_after_pruning;
 public:
+    explicit PruningMethod(utils::Verbosity verbosity);
     explicit PruningMethod(const plugins::Options &opts);
     virtual ~PruningMethod() = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);

@@ -72,6 +72,10 @@ protected:
 
 public:
     explicit Heuristic(const plugins::Options &opts);
+    Heuristic(const std::basic_string<char> unparsed_config,
+                     utils::LogProxy log,
+                     bool cache_evaluator_values,
+                     std::shared_ptr<AbstractTask> task);
     explicit Heuristic(std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
 

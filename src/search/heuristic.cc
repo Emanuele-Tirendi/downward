@@ -31,6 +31,16 @@ plugins::Options create_dummy_options_for_python_binding() {
     return opts;
 }
 
+Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
+                     utils::LogProxy log,
+                     bool cache_evaluator_values,
+                     shared_ptr<AbstractTask> task)
+    : Evaluator(log, unparsed_config, true, true, true),
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+      cache_evaluator_values(cache_evaluator_values),
+      task(task), task_proxy(*task) {
+}
+
 Heuristic::Heuristic(shared_ptr<AbstractTask> task)
     : Evaluator(create_dummy_options_for_python_binding(), true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)),

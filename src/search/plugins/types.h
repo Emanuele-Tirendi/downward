@@ -51,6 +51,7 @@ public:
 
     virtual std::string name() const = 0;
     virtual size_t get_hash() const = 0;
+    virtual std::string get_fully_qualified_name() const = 0;
 };
 
 class BasicType : public Type {
@@ -64,12 +65,15 @@ public:
     virtual bool can_convert_into(const Type &other) const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    //TODO: implement
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class FeatureType : public Type {
     std::type_index pointer_type;
     std::string type_name;
     std::string synopsis;
+    std::string fully_qualified_name;
     bool can_be_bound_to_variable;
 
 public:
@@ -81,6 +85,8 @@ public:
     virtual std::string get_synopsis() const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    void set_fully_qualified_name(std::string fully_qualilfied_name);
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class ListType : public Type {
@@ -95,6 +101,8 @@ public:
     virtual bool can_convert_into(const Type &other) const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    //TODO: implement
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class EmptyListType : public Type {
@@ -104,12 +112,15 @@ public:
     virtual bool can_convert_into(const Type &other) const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    //TODO: implement
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class EnumType : public Type {
     std::type_index type;
     std::vector<std::string> values;
     EnumInfo documented_values;
+    std::string fully_qualified_name;
 
 public:
     EnumType(std::type_index type, const EnumInfo &documented_values);
@@ -119,6 +130,8 @@ public:
     virtual const EnumInfo &get_documented_enum_values() const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    void set_fully_qualified_name(std::string get_fully_qualified_name);
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class SymbolType : public Type {
@@ -128,6 +141,8 @@ public:
     bool can_convert_into(const Type &other) const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
+    //TODO: implement
+    virtual std::string get_fully_qualified_name() const override;
 };
 
 class TypeRegistry {

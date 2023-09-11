@@ -9,6 +9,9 @@
 #include "../plugins/options.h"
 #include "../task_utils/successor_generator.h"
 #include "../utils/logging.h"
+#include "../evaluators/g_evaluator.h"
+#include "../evaluators/sum_evaluator.h"
+#include "../open_lists/tiebreaking_open_list.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -17,6 +20,8 @@
 #include <set>
 
 using namespace std;
+using GEval = g_evaluator::GEvaluator;
+using SumEval = sum_evaluator::SumEvaluator;
 
 namespace eager_search {
 EagerSearch::EagerSearch(const plugins::Options &opts)
@@ -28,6 +33,60 @@ EagerSearch::EagerSearch(const plugins::Options &opts)
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+EagerSearch::EagerSearch(const shared_ptr<Evaluator> &eval,
+                        const shared_ptr<Evaluator> &lazy_evaluator,
+                        const shared_ptr<PruningMethod> pruning,
+                        OperatorCost cost_type,
+                        int bound,
+                        double max_time,
+                        utils::Verbosity verbosity):
+    SearchEngine(verbosity, cost_type, max_time, bound, std::string()),
+    reopen_closed_nodes(true),
+    preferred_operator_evaluators(),
+    lazy_evaluator(lazy_evaluator),
+    pruning_method(pruning) {
+    shared_ptr<Evaluator> g = make_shared<GEval>(verbosity);
+    shared_ptr<Evaluator> h = eval;
+    shared_ptr<Evaluator> f = make_shared<SumEval>(utils::get_log_from_verbosity(verbosity), vector<std::shared_ptr<Evaluator>>{g, h});
+    shared_ptr<OpenListFactory> open = make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(false, vector<std::shared_ptr<Evaluator>>{f, h}, false);
+
+    f_evaluator = f;
+    open_list = open->create_state_open_list();
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+EagerSearch::EagerSearch(utils::Verbosity verbosity,
+                         OperatorCost cost_type,
+                         double max_time,
+                         int bound,
+                         bool reopen_closed_nodes,
+                         unique_ptr<StateOpenList> open_list,
+                         vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+                         shared_ptr<PruningMethod> pruning_method,
+                         shared_ptr<Evaluator> f_evaluator,
+                         shared_ptr<Evaluator> lazy_evaluator,
+                         string unparsed_config
+                         )
+    : SearchEngine(verbosity,
+                   cost_type,
+                   max_time,
+                   bound,
+                   unparsed_config),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list(std::move(open_list)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
