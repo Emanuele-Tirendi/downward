@@ -76,7 +76,6 @@ public:
                      utils::LogProxy log,
                      bool cache_evaluator_values,
                      std::shared_ptr<AbstractTask> task);
-    explicit Heuristic(std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
 
     virtual int compute_heuristic(const State &ancestor_state) = 0;

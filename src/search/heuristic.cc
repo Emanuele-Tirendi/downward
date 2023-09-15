@@ -23,14 +23,6 @@ Heuristic::Heuristic(const plugins::Options &opts)
       task_proxy(*task) {
 }
 
-
-plugins::Options create_dummy_options_for_python_binding() {
-    plugins::Options opts;
-    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::NORMAL);
-    opts.set_unparsed_config("Evaluator created from Python");
-    return opts;
-}
-
 Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
                      utils::LogProxy log,
                      bool cache_evaluator_values,
@@ -39,14 +31,6 @@ Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_evaluator_values),
       task(task), task_proxy(*task) {
-}
-
-Heuristic::Heuristic(shared_ptr<AbstractTask> task)
-    : Evaluator(create_dummy_options_for_python_binding(), true, true, true),
-      heuristic_cache(HEntry(NO_VALUE, true)),
-      cache_evaluator_values(true),
-      task(task),
-      task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
