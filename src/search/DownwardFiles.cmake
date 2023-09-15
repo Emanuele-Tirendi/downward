@@ -860,7 +860,7 @@ fast_downward_plugin(
     NAME PYDOWNWARD_CODE_GENERATION
     HELP "Plugin for generating pybind11 code,"
     SOURCES
-        generate_pybind11
+        pybindings/generate_pybind11
 )
 
 if (NOT PYBINDING_CODE_GENERATION)

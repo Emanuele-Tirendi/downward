@@ -4,7 +4,9 @@ To install pybind11, use
 If you want to add your own feature and added the corresponding source files, 
 open the file locatet at src/search/pybindings/functions.txt and type in the
 following information: <class_name> <function_name_to_export> [<function_name_to_export> ...]
-Overloaded functions aren't supported.
+Overloaded functions aren't supported. Note that you have to use the fully qualified name
+for <class_name>, i.e. the class name with all the corresponding namespaces.
+For <function_name> you shouldn't use the fully qualified name but only the function name.
 
 To test the current pybind setup, proceed as follows:
 
