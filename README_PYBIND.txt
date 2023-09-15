@@ -21,39 +21,3 @@ Alternatively to the following command invoked in pybuild.py:
 $ ./fast-downward.py pybindings-command-line
 you can invoke this command when you do it manually.
 $ ./fast-downward.py pybindings-dynamic-import
-
-
-Notes on the interface:
-
-* We hacked the code in some places
-  - We made Heuristic::compute_heuristic public. This might be necessary for the
-    trampoline classes but have not looked for alternatives.
-  - We added a global function get_root_task to access the global task. We have
-    to think about how to expose the task.
-  - We excluded some features of being exported since their signature doesn't match
-    the signature specified in their corresponding feature classes.
-
-* The order of template parameters in py::class_<...> does not matter. Pybind
-  will figure out which parameter is which. We should agree on some default order.
-  For Heuristic, we use four parameters:
-  - Heuristic is the class to expose to Python
-  - std::shared_ptr<Heuristic> is the holder that is internally used for
-    reference counting, we use shared pointers to make this compatible with our
-    other features.
-  - Evaluator is the base class
-  - HeuristicTrampoline is a class used to handle function calls of virtual
-    functions. If we inherit from Heuristic in Python, the trampoline class is
-    responsible for forwarding calls to the Python class. See
-    https://pybind11.readthedocs.io/en/stable/advanced/classes.html
-
-* Trampoline classes (EvaluatorTrampoline, HeuristicTrampoline) are needed to
-  derive classes in Python. They are needed for all classes in the hierarchy. For
-  example, if we wanted to allow users to inherit from FFHeuristic, it would also
-  need a trampoline class. They have to define all virtual methods that we want to
-  make available in Python on every level (FFHeuristicTrampoline would have to
-  repeat the definition of compute_heuristic). It is not clear if the trampoline
-  for Evaluator is needed as long as no virtual method from Evaluator is in the
-  interface. Probably yes, because the constructor counts.
-
-* py::make_iterator can be used to set up an iterable but py::keep_alive is
-  required to keep the iterator alive while it is used.

@@ -67,12 +67,6 @@ public:
                  double max_time,
                  int bound,
                  std::string unparsed_config);
-    // SearchEngine(std::shared_ptr<AbstractTask> task,
-    //              utils::Verbosity verbosity,
-    //              OperatorCost cost_type,
-    //              double max_time,
-    //              int bound,
-    //              std::string unparsed_config);
     virtual ~SearchEngine();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
