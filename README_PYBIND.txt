@@ -1,16 +1,23 @@
 To install pybind11, use
   apt install python3-pybind11
 
+If you want to add your own feature and added the corresponding source files, 
+open the file locatet at src/search/pybindings/functions.txt and type in the
+following information: <class_name> <function_name_to_export> [<function_name_to_export> ...]
+Overloaded functions aren't supported.
+
 To test the current pybind setup, proceed as follows:
 
-$ ./pybuild.py
 Put some output.sas file into the project directory
-The test only runs enforced hill-climbing, which has a high likelihood
-to NOT solve a task. It can for example solve the first driverlog task,
-so if in doubt, use that one.
 
-Run with one of the following two commands
+Either run the following command which delets the necessary files and folders, builds the project and
+tests it with the file locatet at driver/pydownward.py, or do it manually. You find all the necessary
+commands in pybuild.py
+$ ./pybuild.py
+
+Alternatively to the following command invoked in pybuild.py:
 $ ./fast-downward.py pybindings-command-line
+you can invoke this command when you do it manually.
 $ ./fast-downward.py pybindings-dynamic-import
 
 
@@ -19,14 +26,10 @@ Notes on the interface:
 * We hacked the code in some places
   - We made Heuristic::compute_heuristic public. This might be necessary for the
     trampoline classes but have not looked for alternatives.
-  - We added a constructor Heuristic(task) that fixes some options (see
-    create_dummy_options_for_python_binding in heuristic.cc). The long term plan
-    would be t not pass the options object into the constructor and instead pass
-    individual parameters that are then also all exposed through the interface.
-  - Similarly, we added temporary constructors for the FF heuristic, search
-    engines, and EHC search.
   - We added a global function get_root_task to access the global task. We have
     to think about how to expose the task.
+  - We excluded some features of being exported since their signature doesn't match
+    the signature specified in their corresponding feature classes.
 
 * The order of template parameters in py::class_<...> does not matter. Pybind
   will figure out which parameter is which. We should agree on some default order.

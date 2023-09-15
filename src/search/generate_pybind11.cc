@@ -141,7 +141,7 @@ void write_head_of_pybind11(std::ofstream& file) {
 \n\
 #include <memory>\n\
 \n\
-#include \"definitions_for_pybind11_code.h\"\n\
+#include \"pybindings/definitions_for_pybind11_code.h\"\n\
 ";
     
     std::ifstream file_with_headers("../../../src/search/headers_to_include.txt");

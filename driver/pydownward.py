@@ -7,8 +7,6 @@ def search():
     pydownward.read_task("output.sas")
     task = pydownward.get_root_task()
 
-    # h = pydownward.FFHeuristic(task)
-    # search = pydownward.EHCSearch("hallo", 0, 100.0, 100, h)
     infinity = 2000000
     h = pydownward.lmcut(task, pydownward.verbosity.normal, task, True) # pydownward.no_transform() mit task ersetzt
     search = pydownward.astar(h, h, pydownward.null(pydownward.verbosity.normal), pydownward.costtype.normal, infinity, infinity, pydownward.verbosity.normal)

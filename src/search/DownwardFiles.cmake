@@ -849,7 +849,7 @@ fast_downward_plugin(
     HELP "Plugin for creating a pybind11 library for search algorithms and heuristics."
     SOURCES
         pydownward
-        definitions_for_pybind11_code
+        pybindings/definitions_for_pybind11_code
 )
 
 if (NOT PYBINDING_LIBRARY)

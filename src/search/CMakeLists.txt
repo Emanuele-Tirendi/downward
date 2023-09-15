@@ -37,7 +37,6 @@ if (PYBINDING_LIBRARY)
     pybind11_add_module(downward 
     ${PLANNER_SOURCES}
     )
-    # target_link_libraries(downward PUBLIC)
 elseif(PYBINDING_CODE_GENERATION)
     file(WRITE "headers_to_include.txt" ${PLANNER_SOURCES})
     add_executable(downward ${PLANNER_SOURCES})
