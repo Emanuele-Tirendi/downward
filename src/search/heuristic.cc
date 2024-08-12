@@ -7,6 +7,7 @@
 #include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
 #include "tasks/root_task.h"
+#include "utils/logging.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -20,6 +21,16 @@ Heuristic::Heuristic(const plugins::Options &opts)
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task) {
+}
+
+Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
+                     utils::LogProxy log,
+                     bool cache_evaluator_values,
+                     shared_ptr<AbstractTask> task)
+    : Evaluator(log, unparsed_config, true, true, true),
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+      cache_evaluator_values(cache_evaluator_values),
+      task(task), task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {

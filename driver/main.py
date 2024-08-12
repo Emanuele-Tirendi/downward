@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import importlib
 
 from . import aliases
 from . import arguments
@@ -12,6 +13,23 @@ from . import __version__
 
 
 def main():
+    # The call of the python library is only provisionally here in main().
+
+    # We want the library to be build only when we specify that explicitely
+    # in the call of build.py. That means that the default behaviour is without
+    # building the library. This makes it impossible to make a static import for
+    # the library since this would return an error message every time fast-downward.py
+    # is invoked when the library was not build. Thus one of the following two options
+    # are taken into account.
+    
+    if sys.argv[1] == "pybindings-command-line":
+        os.system("python3 -c 'from driver import pydownward; pydownward.search()'")
+        return
+    if sys.argv[1] == "pybindings-dynamic-import":
+        pydownward = importlib.import_module('driver.pydownward')
+        pydownward.search()
+        return
+    
     args = arguments.parse_args()
     logging.basicConfig(level=getattr(logging, args.log_level.upper()),
                         format="%(levelname)-8s %(message)s",

@@ -37,6 +37,24 @@ protected:
 
 public:
     explicit EagerSearch(const plugins::Options &opts);
+    explicit EagerSearch(const std::shared_ptr<Evaluator> &eval,
+                        const std::shared_ptr<Evaluator> &lazy_evaluator,
+                        const std::shared_ptr<PruningMethod> pruning,
+                        OperatorCost cost_type,
+                        int bound,
+                        double max_time,
+                        utils::Verbosity verbosity);
+    explicit EagerSearch(utils::Verbosity verbosity,
+                         OperatorCost cost_type,
+                         double max_time,
+                         int bound,
+                         bool reopen_closed_nodes,
+                         std::unique_ptr<StateOpenList> open_list,
+                         std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
+                         std::shared_ptr<PruningMethod> pruning_method,
+                         std::shared_ptr<Evaluator> f_evaluator = nullptr,
+                         std::shared_ptr<Evaluator> lazy_evaluator = nullptr,
+                         std::string unparsed_config = std::string());
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;

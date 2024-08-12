@@ -63,6 +63,8 @@ public:
     void document_note(
         const std::string &title, const std::string &note, bool long_text = false);
 
+    virtual std::string get_fully_qualified_base_name() const = 0;
+    virtual std::string get_fully_qualified_constructed_name() const = 0;
     const Type &get_type() const;
     std::string get_key() const;
     std::string get_title() const;
@@ -72,6 +74,7 @@ public:
     const std::vector<PropertyInfo> &get_properties() const;
     const std::vector<LanguageSupportInfo> &get_language_support() const;
     const std::vector<NoteInfo> &get_notes() const;
+    const std::string get_constructor_signature() const;
 };
 
 
@@ -112,6 +115,12 @@ public:
     Any construct(const Options &options, const utils::Context &context) const override {
         std::shared_ptr<Base> ptr = this->create_component(options, context);
         return Any(ptr);
+    }
+    std::string get_fully_qualified_base_name() const {
+        return static_cast<std::string>(utils::get_type_name<Base>());
+    }
+    std::string get_fully_qualified_constructed_name() const {
+        return static_cast<std::string>(utils::get_type_name<Constructed>());
     }
 };
 
@@ -175,6 +184,7 @@ public:
     void document_synopsis(const std::string &synopsis);
     void allow_variable_binding();
 
+    virtual std::string get_fully_qualified_name() const = 0;
     std::type_index get_pointer_type() const;
     std::string get_category_name() const;
     std::string get_class_name() const;
@@ -189,6 +199,9 @@ public:
         : CategoryPlugin(typeid(std::shared_ptr<T>),
                          utils::get_type_name<std::shared_ptr<T>>(),
                          category_name) {
+    }
+    std::string get_fully_qualified_name() const {
+        return static_cast<std::string>(utils::get_type_name<T>());
     }
 };
 
@@ -218,6 +231,7 @@ public:
     std::type_index get_type() const;
     std::string get_class_name() const;
     const EnumInfo &get_enum_info() const;
+    virtual std::string get_fully_qualified_name() const = 0;
 };
 
 template<typename T>
@@ -225,6 +239,9 @@ class TypedEnumPlugin : public EnumPlugin {
 public:
     TypedEnumPlugin(std::initializer_list<std::pair<std::string, std::string>> enum_values)
         : EnumPlugin(typeid(T), utils::get_type_name<std::shared_ptr<T>>(), enum_values) {
+    }
+    virtual std::string get_fully_qualified_name() const override {
+        return static_cast<std::string>(utils::get_type_name<T>());
     }
 };
 

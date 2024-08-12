@@ -42,6 +42,45 @@ option(
 # plugins are enabled or disabled manually.
 mark_as_advanced(DISABLE_PLUGINS_BY_DEFAULT)
 
+# if PYBIND_CODE_GENERATION, remove planner from CORE_SOURCES, since there is
+# a new main function in this case
+if(PYBINDING_CODE_GENERATION)
+fast_downward_plugin(
+    NAME CORE_SOURCES
+    HELP "Core source files"
+    SOURCES
+        abstract_task
+        axioms
+        command_line
+        evaluation_context
+        evaluation_result
+        evaluator
+        evaluator_cache
+        heuristic
+        open_list
+        open_list_factory
+        operator_cost
+        operator_id
+        per_state_array
+        per_state_bitset
+        per_state_information
+        per_task_information
+        plan_manager
+        pruning_method
+        search_engine
+        search_node_info
+        search_progress
+        search_space
+        search_statistics
+        state_id
+        state_registry
+        task_id
+        task_proxy
+
+    DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUBSCRIBER SUCCESSOR_GENERATOR TASK_PROPERTIES
+    CORE_PLUGIN
+)
+else()
 fast_downward_plugin(
     NAME CORE_SOURCES
     HELP "Core source files"
@@ -79,6 +118,7 @@ fast_downward_plugin(
     DEPENDS CAUSAL_GRAPH INT_HASH_SET INT_PACKER ORDERED_SET SEGMENTED_VECTOR SUBSCRIBER SUCCESSOR_GENERATOR TASK_PROPERTIES
     CORE_PLUGIN
 )
+endif()
 
 fast_downward_plugin(
     NAME PLUGINS
@@ -803,6 +843,29 @@ fast_downward_plugin(
         algorithms/sccs
     DEPENDENCY_ONLY
 )
+
+fast_downward_plugin(
+    NAME PYDOWNWARD
+    HELP "Plugin for creating a pybind11 library for search algorithms and heuristics."
+    SOURCES
+        pydownward
+        pybindings/definitions_for_pybind11_code
+)
+
+if (NOT PYBINDING_LIBRARY)
+    set(PLUGIN_PYDOWNWARD_ENABLED FALSE)
+endif()
+
+fast_downward_plugin(
+    NAME PYDOWNWARD_CODE_GENERATION
+    HELP "Plugin for generating pybind11 code,"
+    SOURCES
+        pybindings/generate_pybind11
+)
+
+if (NOT PYBINDING_CODE_GENERATION)
+    set(PLUGIN_PYDOWNWARD_CODE_GENERATION_ENABLED FALSE)
+endif()
 
 fast_downward_add_plugin_sources(PLANNER_SOURCES)
 

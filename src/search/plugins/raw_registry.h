@@ -24,6 +24,7 @@ public:
     void insert_subcategory_plugin(const SubcategoryPlugin &subcategory_plugin);
     void insert_enum_plugin(const EnumPlugin &enum_plugin);
     void insert_plugin(const Plugin &plugin);
+    std::vector<const CategoryPlugin *> get_category_plugins();
 
     Registry construct_registry() const;
 

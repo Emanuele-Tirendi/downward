@@ -27,7 +27,22 @@ fast_downward_set_linker_flags()
 
 # Collect source files needed for the active plugins.
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
-add_executable(downward ${PLANNER_SOURCES})
+if (PYBINDING_LIBRARY)
+    find_package(pybind11 REQUIRED)
+    # TODO: Find solution: The name of the library will be the same as the name
+    # of the target used in the pybind11_add_module() command. It would be more
+    # desirable to name it pydownward but since in the section == libraries ==
+    # there are libraries that are linked against downward, we need to use
+    # downward as well and cannot create a new one named pydownward
+    pybind11_add_module(downward 
+    ${PLANNER_SOURCES}
+    )
+elseif(PYBINDING_CODE_GENERATION)
+    file(WRITE "headers_to_include.txt" ${PLANNER_SOURCES})
+    add_executable(downward ${PLANNER_SOURCES})
+else()
+    add_executable(downward ${PLANNER_SOURCES})
+endif()
 
 ## == Includes ==
 
@@ -37,13 +52,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
 
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)
-    target_link_libraries(downward rt)
+    target_link_libraries(downward PUBLIC rt)
 endif()
 
 # On Windows, find the psapi library for determining peak memory.
 if(WIN32)
     cmake_policy(SET CMP0074 NEW)
-    target_link_libraries(downward psapi)
+    target_link_libraries(downward PUBLIC psapi)
 endif()
 
 # If any enabled plugin requires an LP solver, compile with all
@@ -71,19 +86,19 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
                 mark_as_advanced(TMP_SOLVER_UPPER_CASE)
                 add_definitions("-D COIN_HAS_${TMP_SOLVER_UPPER_CASE}")
                 include_directories(${OSI_${SOLVER}_INCLUDE_DIRS})
-                target_link_libraries(downward ${OSI_${SOLVER}_LIBRARIES})
+                target_link_libraries(downward PUBLIC ${OSI_${SOLVER}_LIBRARIES})
             endif()
         endforeach()
 
         # Note that basic OSI libs must be added after (!) all OSI solver libs.
         add_definitions("-D USE_LP")
         include_directories(${OSI_INCLUDE_DIRS})
-        target_link_libraries(downward ${OSI_LIBRARIES})
+        target_link_libraries(downward PUBLIC ${OSI_LIBRARIES})
 
         find_package(ZLIB REQUIRED)
         if(ZLIB_FOUND)
             include_directories(${ZLIB_INCLUDE_DIRS})
-            target_link_libraries(downward ${ZLIB_LIBRARIES})
+            target_link_libraries(downward PUBLIC ${ZLIB_LIBRARIES})
         endif()
     endif()
 

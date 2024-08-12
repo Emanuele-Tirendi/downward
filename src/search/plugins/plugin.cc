@@ -72,6 +72,29 @@ const vector<NoteInfo> &Feature::get_notes() const {
     return notes;
 }
 
+const std::string Feature::get_constructor_signature() const {
+    std::string constructor_signature = "";
+    int count = 0;
+    for (ArgumentInfo argument : arguments) {
+        std::string fully_qualified_argument;
+        if (argument.type.is_basic_type()) {
+            fully_qualified_argument = argument.type.name();
+        } else if (argument.type.is_feature_type()) {
+            fully_qualified_argument = "std::shared_ptr<" + argument.type.get_fully_qualified_name() + ">";
+        } else {
+            fully_qualified_argument = argument.type.get_fully_qualified_name();
+        }
+
+        if (!count) {
+            constructor_signature = fully_qualified_argument;
+            count++;
+        } else {
+            constructor_signature = constructor_signature + ", " + fully_qualified_argument;
+        }
+    }
+    return constructor_signature;
+}
+
 Plugin::Plugin() {
     RawRegistry::instance()->insert_plugin(*this);
 }

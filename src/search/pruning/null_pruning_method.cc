@@ -10,6 +10,10 @@ NullPruningMethod::NullPruningMethod(const plugins::Options &opts)
     : PruningMethod(opts) {
 }
 
+NullPruningMethod::NullPruningMethod(const utils::Verbosity verbosity)
+    : PruningMethod(verbosity) {
+}
+
 void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
     PruningMethod::initialize(task);
     log << "pruning method: none" << endl;
